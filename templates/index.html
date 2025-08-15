@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistente de Documentos com CrewAI</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background-color: #fff; padding: 40px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 600px; text-align: center; }
+        h1 { color: #0056b3; }
+        textarea { width: 100%; padding: 15px; margin: 20px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; resize: vertical; min-height: 80px; }
+        button { background-color: #0056b3; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; transition: background-color 0.3s; }
+        button:hover { background-color: #004494; }
+        .error { color: #d9534f; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Assistente de Documentos</h1>
+        <p>Faça uma pergunta sobre o conteúdo dos nossos documentos PDF e a nossa equipe de IAs irá responder.</p>
+        
+        <form action="/get_answer" method="POST">
+            <textarea name="pergunta" placeholder="Ex: Qual é a política de garantia do produto?" required></textarea>
+            <br>
+            <button type="submit">Gerar Resposta</button>
+        </form>
+        
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+    </div>
+</body>
+</html>
