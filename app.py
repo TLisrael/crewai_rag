@@ -6,7 +6,7 @@ from flask import Flask, render_template, request
 from markupsafe import Markup
 from crewai import Agent, Task, Crew, Process
 
-# Importações para leitura de PDF e RAG
+
 from pypdf import PdfReader
 from langchain.text_splitter import CharacterTextSplitter
 from crewai.tools import tool
@@ -77,13 +77,14 @@ def run_rag_crew(pergunta: str):
     writer_agent = Agent(
         role='Redator Técnico',
         goal='Gerar uma resposta clara e concisa para o usuário, baseando-se estritamente no contexto fornecido.',
-        backstory='Você é um redator técnico com um talento para explicar tópicos complexos de forma simples.',
-        # --- CORREÇÃO 2: Remover o LLM do agente individual ---
+        backstory="""Você é o Dr. Klaus, um documentador técnico sênior com 20 anos de experiência na Siemens.
+                        Sua especialidade é pegar informações brutas e densas de engenheiros e transformá-las em documentação clara, precisa e fácil de seguir.
+                      Você odeia ambiguidade e sempre busca a clareza máxima. Sua obsessão é a precisão factual, baseando-se estritamente nas fontes fornecidas.""",
         verbose=False
     )
     
     retrieval_task = Task(description=f'Use a ferramenta de busca para encontrar o trecho relevante para a pergunta: "{pergunta}"', expected_output='O trecho (chunk) de texto mais relevante encontrado na base de conhecimento.', agent=retrieval_agent)
-    writing_task = Task(description=f'Analise o contexto fornecido e responda à pergunta do usuário: "{pergunta}". Use SOMENTE as informações do contexto.', expected_output='Uma resposta direta e clara para a pergunta do usuário, em formato Markdown.', context=[retrieval_task], agent=writer_agent)
+    writing_task = Task(description=f'Analise o contexto fornecido e responda à pergunta do usuário: "{pergunta}". Use SOMENTE as informações do contexto.', expected_output='Uma resposta completa e bem formatada em Markdown. A resposta deve conter:- Um título principal. - Um parágrafo introdutório que resume a resposta. - Se aplicável, use uma lista com marcadores (bullets) para detalhar os pontos importantes. - Use **negrito** para destacar termos-chave. - Se a resposta não estiver no contexto, responda educadamente: Não encontrei informações sobre isso nos documentos fornecidos.', context=[retrieval_task], agent=writer_agent)
     
     crew = Crew(
         agents=[retrieval_agent, writer_agent],
