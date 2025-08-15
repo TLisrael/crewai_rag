@@ -86,9 +86,30 @@ def run_rag_crew(pergunta: str):
     retrieval_task = Task(description=f'Use a ferramenta de busca para encontrar o trecho relevante para a pergunta: "{pergunta}"', expected_output='O trecho (chunk) de texto mais relevante encontrado na base de conhecimento.', agent=retrieval_agent)
     writing_task = Task(description=f'Analise o contexto fornecido e responda à pergunta do usuário: "{pergunta}". Use SOMENTE as informações do contexto.', expected_output='Uma resposta completa e bem formatada em Markdown. A resposta deve conter:- Um título principal. - Um parágrafo introdutório que resume a resposta. - Se aplicável, use uma lista com marcadores (bullets) para detalhar os pontos importantes. - Use **negrito** para destacar termos-chave. - Se a resposta não estiver no contexto, responda educadamente: Não encontrei informações sobre isso nos documentos fornecidos.', context=[retrieval_task], agent=writer_agent)
     
+
+    revisor_agent = Agent(
+        role='Editor Técnico Chefe',
+        goal='Revisar a documentação escrita para garantir precisão, clareza e conformidade com o estilo.',
+        backstory='Você é o editor final. Seu trabalho é pegar um rascunho e garantir que ele esteja perfeito, verificando se a resposta corresponde EXATAMENTE ao contexto fornecido e se não há nenhuma informação inventada.',
+        verbose=False,
+        llm=ollama_llm
+    )
+
+
+    review_task = Task(
+        description="""Leia o rascunho da resposta e o contexto original. Verifique os seguintes pontos:
+        1. A resposta é 100% baseada no contexto?
+        2. A resposta é clara e fácil de entender?
+        3. A formatação está correta?
+        Retorne a versão final e aprovada do texto.""",
+        expected_output="O texto final em Markdown, revisado e aprovado.",
+        context=[writing_task],
+        agent=revisor_agent
+    )
+
     crew = Crew(
-        agents=[retrieval_agent, writer_agent],
-        tasks=[retrieval_task, writing_task],
+        agents=[retrieval_agent, writer_agent, revisor_agent],
+        tasks=[retrieval_task, writing_task, review_task],
         process=Process.sequential,
         llm=ollama_llm 
     )
